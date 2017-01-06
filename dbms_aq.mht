@@ -1,0 +1,1067 @@
+From: <Zapisane przez program Windows Internet Explorer 8>
+Subject: Message Queueing
+Date: Mon, 8 Aug 2011 16:31:33 +0200
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----=_NextPart_000_0000_01CC55E8.A2839DD0"
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5994
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0000_01CC55E8.A2839DD0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: http://www.oratechinfo.co.uk/aq.html
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" =
+"http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<HTML lang=3Den xml:lang=3D"en" =
+xmlns=3D"http://www.w3.org/1999/xhtml"><HEAD><TITLE>Message =
+Queueing</TITLE>
+<META content=3D"text/html; charset=3DISO-8859-1" =
+http-equiv=3DContent-Type>
+<META name=3DDescription=20
+content=3D"oratechinfo.co.uk : Oracle Developer and DBA resources">
+<META content=3Dno-cache http-equiv=3Dpragma>
+<META content=3Dno-cache http-equiv=3Dcache-control><LINK =
+rel=3Dstylesheet=20
+type=3Dtext/css =
+href=3D"http://www.oratechinfo.co.uk/stylesheet/oratech.css">
+<META name=3DGENERATOR content=3D"MSHTML 8.00.6001.19019"></HEAD>
+<BODY>
+<CENTER>
+<H1>Message Queueing</H1></CENTER>
+<UL>
+  <LI><A class=3Dofftab4=20
+  =
+href=3D"http://www.oratechinfo.co.uk/aq.html#mq_overview">Overview</A></L=
+I>
+  <LI><A class=3Dofftab4=20
+  href=3D"http://www.oratechinfo.co.uk/aq.html#simple_insert">Simple=20
+  INSERT</A></LI>
+  <LI><A class=3Dofftab4=20
+  href=3D"http://www.oratechinfo.co.uk/aq.html#dbms_aq">Advanced =
+Queueing</A>=20
+  <UL>
+    <LI><A class=3Dofftab4=20
+    href=3D"http://www.oratechinfo.co.uk/aq.html#deq_modes">Dequeueing=20
+    Modes</A></LI>
+    <LI><A class=3Dofftab4=20
+    href=3D"http://www.oratechinfo.co.uk/aq.html#deq_wait">Dequeueing =
+Wait=20
+    Times</A></LI>
+    <LI><A class=3Dofftab4=20
+    href=3D"http://www.oratechinfo.co.uk/aq.html#enq_deq">Mechanisms for =
+Enqueue=20
+    and Dequeue</A>=20
+    <UL>
+      <LI><A class=3Dofftab4=20
+      href=3D"http://www.oratechinfo.co.uk/aq.html#daemon">"Daemon"-type =
+
+      process</A></LI>
+      <LI><A class=3Dofftab4=20
+      href=3D"http://www.oratechinfo.co.uk/aq.html#dbms_job">Dequeue =
+using=20
+      DBMS_JOB</A></LI>
+      <LI><A class=3Dofftab4 =
+href=3D"http://www.oratechinfo.co.uk/aq.html#notify">9i=20
+      PL/SQL Notification (Callback)</A></LI></UL></LI>
+    <LI><A class=3Dofftab4=20
+    href=3D"http://www.oratechinfo.co.uk/aq.html#drop_aq">Removing =
+Queues</A></LI>
+    <LI><A class=3Dofftab4=20
+    href=3D"http://www.oratechinfo.co.uk/aq.html#monitor_aq">Monitoring=20
+    Queues</A></LI>
+    <LI><A class=3Dofftab4=20
+    =
+href=3D"http://www.oratechinfo.co.uk/aq.html#queue_performance">Queue=20
+    Performance</A></LI>
+    <LI><A class=3Dofftab4=20
+    href=3D"http://www.oratechinfo.co.uk/aq.html#queue_session">Session =
+Handling=20
+    within Queues</A></LI></UL></LI></UL>
+<HR>
+<A name=3Dmq_overview>
+<H2>Overview</H2>One of the bugbears of users of applications is simply =
+how long=20
+it takes to do things. Putting it simply, users get bored. They always =
+will. I=20
+know I do. So, as developers, anything we can do to improve the =
+performance of=20
+applications has to be a good thing. The problem is that, in any given=20
+environment, there is always a minimum time to do anything. It takes a =
+finite=20
+amount of time to INSERT a table, UPDATE a column, etc. and usually most =
+
+business logic involves many steps. <BR><BR>So, with systems where =
+business=20
+logic takes time, what can we do to improve performance? Well, a common =
+and=20
+effective approach is to split the work done by an application into the=20
+components which need to be done in order to allow the user to carry on =
+with the=20
+work flow, and those which can be done "behind the scenes". <BR><BR>It's =
+a=20
+simple approach really, if there's a large amount of work which needs to =
+be=20
+done, but the user does not need to see the results of, then if you =
+could simply=20
+<I>schedule</I> (or <I>defer</I>) the work to be done, rather than doing =
+it,=20
+then the <I>perceived</I> performance of the application increases. A =
+good=20
+example is a web page, where the user submits some details and =
+subsequent=20
+processes create users / send emails etc. The user does not want to wait =
+until=20
+all this is finished. They're fine with a <I>"you're request has been =
+received,=20
+an email will be sent when your account has been authorised"</I>-type =
+message.=20
+<BR><BR>This is where techniques such as Message Queueing (MQ) are used. =
+The=20
+premise is simple,=20
+<OL>
+  <LI>Application creates (or <I>enqueues</I>) a message with =
+information for=20
+  enabling the business logic</LI>
+  <LI>A seperate process receives (or <I>dequeues</I>) the message and =
+executes=20
+  the business logic</LI></OL>There are many mechanisms for implementing =
+this type=20
+of approach. This section will cover the most common.=20
+<HR>
+<A name=3Dsimple_insert>
+<H2>Simple INSERT</H2>This is perhaps the simplest approach, and one =
+that, with=20
+the advent of Autonomous Transactions, becomes very easy to implement.=20
+<UL>
+  <LI>Create a messages table with attributes enough to allow the =
+business logic=20
+  to complete, i.e. the "parameters"</LI>
+  <LI>Create enqueue and dequeue package procedures</LI>
+  <LI>Schedule a DBMS_JOB to poll the table (via dequeue) and execute =
+the=20
+  business logic when a message appears</LI></UL>Now, the application =
+only has to=20
+insert a row into the table (i.e. enqueue) and the business logic gets =
+enabled.=20
+<BR><BR>In reality, of course, the job should lock the row upon =
+selecting to=20
+ensure other jobs don't get the same message. <BR><BR>There is a SQL =
+statement=20
+which makes the selecting of non-locked rows extremely easy, and that is =
+
+<I>SELECT .. FROM ... FOR UPDATE SKIP LOCKED</I> (usually in conjunction =
+with=20
+<I>and rownum=3D1</I> ;-)). This command (which until 9i was =
+undocumented, but is=20
+certainly available in 8i) is the reason why Advanced Queueing (AQ) is =
+so=20
+efficient, and allows you to build much more light-weight mechanisms =
+than the=20
+alternatives, such as looping through the rows in the messages table =
+using the=20
+NOWAIT syntax (which, of course, raises an exception if the row is =
+locked).=20
+<HR>
+<A name=3Ddbms_aq>
+<H2>Advanced Queueing</H2>Advanced Queueing (AQ) is the umbrella term =
+for a=20
+series of techniques, the components of which are provided by Oracle. =
+The basic=20
+concept is the same as the <A class=3Dofftab4=20
+href=3D"http://www.oratechinfo.co.uk/aq.html#simple_insert">Simple =
+INSERT</A>, but=20
+the capabilities have been vastly extended, such that the message can be =
+read by=20
+multiple recipients (via the publish-subscriber concept), and allows=20
+prioritization of messages.. It has the additional advantages of being =
+able to=20
+be called from PL/SQL, Java, C and even hook into other message queueing =
+systems=20
+via the Oracle Messaging Gateway. <BR><BR><I>Messages</I>, therefore, =
+are the=20
+basic unit of AQ (as you might expect). Each message consists of a =
+header, which=20
+contains metadata about message priority, ordering information, expiry =
+times=20
+etc., and a body, which contains user data in the form of an OBJECT =
+type.=20
+<BR><BR><I>Queues</I>, therefore, are simply repositories of messages. =
+Under the=20
+Advanced Queueing umbrella, there are two types of Queues, <I>user</I> =
+queues=20
+and <I>exception</I> queues. A user queue is for normal messaging =
+functionality,=20
+and messages which cannot be processed or retrieved from a user queue is =
+
+transferred to the exception queue. <BR><BR><I>Queue Tables</I>, are the =
+place=20
+where queues are stored. A given queue table may contain one or many =
+queues.=20
+Each queue table contains a default exception queue. Each column in a =
+queue=20
+table is a seperate queue, and rows represent individual messages.=20
+<BR><BR><I>Agents</I> are the users of a queue. There are two types of =
+Agent,=20
+<I>Producers</I> and <I>Consumers</I>. Producers put messages onto the =
+queue (=20
+or Enqueue ), Consumers read the messages ( or Dequeue ). The packages =
+which are=20
+used to enable the AQ functionality, are DBMS_AQ and DBMS_AQADM, and =
+it's=20
+surprisingly easy to set up the environment such that your application =
+can take=20
+advantage of this functionality. <BR><BR><I>Time Manager</I> is the =
+process=20
+responsible for managing the expiration of messages. The number of Time =
+Managers=20
+is controlled by the PFILE parameter, AQ_TM_PROCESSES which can be set =
+to a=20
+value between 1 and 10. <BR><BR>Messages are created using the =
+DBMS_AQ.ENQUEUE=20
+procedure, and are read by the DBMS_AQ.DEQUEUE procedure. <BR><BR>There =
+are 2=20
+roles associated with AQ, AQ_USER_ROLE and AQ_ADMINISTRATOR_ROLE. =
+Basically, the=20
+difference is that AQ_USER_ROLE only has execute privileges on the =
+DBMS_AQ,=20
+basically allowing ENQUEUE and DEQUEUE type operations, whereas,=20
+AQ_ADMINISTRATOR_ROLE has execute privs on both DBMS_AQ and DBMS_AQADM, =
+allowing=20
+creation of Queue Tables etc. <BR><BR>So, as AQ administrator, create a =
+queue=20
+setup, i.e. <BR><BR>Create the OBJECT type (note, advanced setups will =
+require a=20
+much more complex OBJECT type, this is for example only) <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; CREATE =
+TYPE message_type AS OBJECT ( message_body  VARCHAR2(50) );
+  2  /
+
+Type created.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Now, create the queue table =
+using the=20
+new message_type OBJECT : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; BEGIN
+  2    dbms_aqadm.create_queue_table(queue_table =3D&gt; 'queue_table',
+  3                                  queue_payload_type =3D&gt; =
+'message_type');
+  4  END;
+  5  /
+
+PL/SQL procedure successfully completed.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Just prove the queue_table table =
+has=20
+been created with our custom payload : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; DESC =
+queue_table
+ Name                                      Null?    Type
+ ----------------------------------------- -------- =
+---------------------------
+ Q_NAME                                             VARCHAR2(30)
+ MSGID                                     NOT NULL RAW(16)
+ CORRID                                             VARCHAR2(128)
+ PRIORITY                                           NUMBER
+ STATE                                              NUMBER
+ DELAY                                              DATE
+ EXPIRATION                                         NUMBER
+ TIME_MANAGER_INFO                                  DATE
+ LOCAL_ORDER_NO                                     NUMBER
+ CHAIN_NO                                           NUMBER
+ CSCN                                               NUMBER
+ DSCN                                               NUMBER
+ ENQ_TIME                                           DATE
+ ENQ_UID                                            NUMBER
+ ENQ_TID                                            VARCHAR2(30)
+ DEQ_TIME                                           DATE
+ DEQ_UID                                            NUMBER
+ DEQ_TID                                            VARCHAR2(30)
+ RETRY_COUNT                                        NUMBER
+ EXCEPTION_QSCHEMA                                  VARCHAR2(30)
+ EXCEPTION_QUEUE                                    VARCHAR2(30)
+ STEP_NO                                            NUMBER
+ RECIPIENT_KEY                                      NUMBER
+ DEQUEUE_MSGID                                      RAW(16)
+ SENDER_NAME                                        VARCHAR2(30)
+ SENDER_ADDRESS                                     VARCHAR2(1024)
+ SENDER_PROTOCOL                                    NUMBER
+<B> USER_DATA                                          MESSAGE_TYPE</B>
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Now, create a queue using the =
+queue=20
+table : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; BEGIN
+  2    dbms_aqadm.create_queue( queue_name =3D&gt; 'example_queue',
+  3                             queue_table =3D&gt; 'queue_table' );
+  4  END;
+  5  /
+
+PL/SQL procedure successfully completed.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Now, start the queue : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; BEGIN
+  2    dbms_aqadm.start_queue(queue_name=3D&gt;'example_queue');
+  3  END;
+  4  /
+
+PL/SQL procedure successfully completed.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Enqueue a message using a =
+procedure=20
+similar to this. Note, since roles are not enabled within stored =
+procedures, you=20
+will need direct EXECUTE grants on DBMS_AQ to the users, rather than =
+just=20
+AQ_USER_ROLE. <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; CREATE =
+OR REPLACE PROCEDURE p_enqueue(msg IN VARCHAR2)
+  2  AS
+  3    PRAGMA AUTONOMOUS_TRANSACTION;
+  4    enqueue_options       dbms_aq.enqueue_options_t;
+  5    message_properties    dbms_aq.message_properties_t;
+  6    message_handle        RAW(16);
+  7  BEGIN
+  8    dbms_aq.enqueue( queue_name            =3D&gt; 'example_queue',
+  9                     enqueue_options       =3D&gt; enqueue_options,
+ 10                     message_properties    =3D&gt; =
+message_properties,
+ 11                     payload               =3D&gt; message_type(msg),
+ 12                     msgid                 =3D&gt; message_handle);
+ 13    COMMIT;
+ 14  END;
+ 15  /
+
+Procedure created.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Dequeue a message using a =
+procedure=20
+similar to this : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; CREATE =
+OR REPLACE PROCEDURE p_dequeue
+  2  AS
+  3    PRAGMA AUTONOMOUS_TRANSACTION;
+  4    dequeue_options      dbms_aq.dequeue_options_t;
+  5    message_properties   dbms_aq.message_properties_t;
+  6    message_handle       RAW(16);
+  7    message              message_type;
+  8  BEGIN
+  9    dbms_aq.dequeue( queue_name =3D&gt; 'example_queue',
+ 10                     dequeue_options       =3D&gt; dequeue_options,
+ 11                     message_properties    =3D&gt; =
+message_properties,
+ 12                     payload               =3D&gt; message,
+ 13                     msgid                 =3D&gt; message_handle);
+ 14    dbms_output.put_line('Message : ' || message.message_body);
+ 15    COMMIT;
+ 16  END p_dequeue;
+ 17  /
+
+Procedure created.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Now, test the queues : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; set =
+serverout on
+
+SQL&gt; EXEC p_enqueue('THIS IS A TEST MESSAGE');
+
+PL/SQL procedure successfully completed.
+
+SQL&gt; EXEC p_dequeue
+Message : THIS IS A TEST MESSAGE
+
+PL/SQL procedure successfully completed.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>So, the basic functionality of =
+DBMS_AQ,=20
+as you can see, it's easy to setup and use.=20
+<HR>
+<A name=3Ddeq_modes>
+<H2>Dequeueing Modes</H2>AQ gives you the ability to dequeue a message =
+with or=20
+without deleting the message from the queue. Basically, you can =
+<I>browse</I> a=20
+message ( i.e. read it but don't remove it from the queue) or =
+<I>consume</I> the=20
+message (i.e. process and remove). They are all specified by using the=20
+<I>dequeue_mode</I> attribute of the <I>dbms_aq.dequeue_options_t</I> =
+object :=20
+<BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; CREATE =
+OR REPLACE PROCEDURE p_dequeue
+  2  AS
+  3    PRAGMA AUTONOMOUS_TRANSACTION;
+  4    dequeue_options      dbms_aq.dequeue_options_t;
+  5    message_properties   dbms_aq.message_properties_t;
+  6    message_handle       RAW(16);
+  7    message              message_type;
+  8  BEGIN
+  <B>9    dequeue_options.dequeue_mode :=3D DBMS_AQ.REMOVE;</B>
+ 10    dbms_aq.dequeue( queue_name =3D&gt; 'example_queue',
+ 11                     dequeue_options       =3D&gt; dequeue_options,
+ 12                     message_properties    =3D&gt; =
+message_properties,
+ 13                     payload               =3D&gt; message,
+ 14                     msgid                 =3D&gt; message_handle);
+ 15    dbms_output.put_line('Message : ' || message.message_body);
+ 16    COMMIT;
+ 17  END p_dequeue;
+</PRE></TD></TR></TBODY></TABLE><BR><BR>This is a tabular list of =
+possible=20
+dequeue_modes and their meanings : <BR><BR>
+<TABLE border=3D1 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD><B>Dequeue Mode</B></TD>
+    <TD><B>Meaning</B></TD></TR>
+  <TR>
+    <TD><B>DBMS_AQ.LOCKED</B></TD>
+    <TD>Message is read and locked by the dequeue operation. No other =
+process=20
+      can see the message until a COMMIT or ROLLBACK occurs.</TD></TR>
+  <TR>
+    <TD><B>DBMS_AQ.BROWSE</B></TD>
+    <TD>Message is read, but other processes can still see the message. =
+There=20
+      is no guarantee that a message will be BROWSEd and then available=20
+      afterwards due to the fact that another session may have removed =
+it</TD></TR>
+  <TR>
+    <TD><B>DBMS_AQ.REMOVE</B></TD>
+    <TD>Message is read and removed immediately (but can be retained =
+depending=20
+      upon the retention properties of the queue). This is the =
+default.</TD></TR>
+  <TR>
+    <TD><B>DBMS_AQ.REMOVE_NODATA</B></TD>
+    <TD>Message is "marked" as read and updated or deleted. This is =
+useful if=20
+      you've already BROWSEd or LOCKED the message, and now want to =
+remove it,=20
+      but without the overhead of receiving the full=20
+message</TD></TR></TBODY></TABLE><BR>For further information, see the =
+Oracle=20
+docs at <A class=3Dofftab4=20
+href=3D"http://download-west.oracle.com/docs/cd/B10501_01/appdev.920/a966=
+12/t_aq2.htm#1012116">http://download-west.oracle.com/docs/cd/B10501_01/a=
+ppdev.920/a96612/t_aq2.htm#1012116</A>.=20
+
+<HR>
+<A name=3Ddeq_wait>
+<H2>Dequeueing Wait Times</H2>The decision has to be made about what =
+happens if=20
+a dequeue request is made (this of course assumes that PL/SQL =
+notification is=20
+not being used), but there are no messages which fulfil the criteria. =
+Under AQ,=20
+there are three possibilities which can be specified by the <I>wait</I>=20
+attribute of the <I>dbms_aq.dequeue_options_t</I> object : <BR><BR>
+<TABLE border=3D1 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD>Wait Mode</TD>
+    <TD>Meaning</TD></TR>
+  <TR>
+    <TD><B>DBMS_AQ.FOREVER</B></TD>
+    <TD>Dequeue operation waits until a message of the correct criteria =
+is=20
+      enqueued. This is the default.</TD></TR>
+  <TR>
+    <TD><B>DBMS_AQ.NO_WAIT</B></TD>
+    <TD>Does not wait at all. Note, the exception -25228 will be raised =
+if no=20
+      messages exist. You will probably want to handle this in the =
+dequeue=20
+      procedure.</TD></TR>
+  <TR>
+    <TD><B><I>Number of Seconds</I></B></TD>
+    <TD>Waits a specified number of seconds before raising the -25228=20
+      exception if no messages exist.</TD></TR></TBODY></TABLE><BR>For =
+further=20
+information, see the Oracle docs at <A class=3Dofftab4=20
+href=3D"http://download-west.oracle.com/docs/cd/B10501_01/appdev.920/a966=
+12/t_aq2.htm#1012116">http://download-west.oracle.com/docs/cd/B10501_01/a=
+ppdev.920/a96612/t_aq2.htm#1012116</A>.=20
+
+<HR>
+<A name=3Denq_deq>
+<H2>Mechanisms for Enqueue and Dequeue</H2>Obviously, when using AQ, you =
+could=20
+come up with dozens of ways to both enqueue and dequeue messages. =
+Enqueueing is=20
+almost always a function of the client, it calls p_enqueue (either =
+directly or=20
+indirectly). Dequeueing, however, is a different kettle of fish. What =
+process do=20
+we use to dequeue messages and subsequently execute the relevant =
+processes? The=20
+most common approaches are : <A name=3Ddbms_job>
+<H3>Dequeue using DBMS_JOB</H3>A common practice is to utilise polling=20
+DBMS_JOBs, constantly calling the dequeue mechanism until a message =
+appears. The=20
+advantages and disadvantages of this approach are : <BR><BR>Advantages=20
+<UL>
+  <LI>Easy to setup</LI></UL>Disadvantages=20
+<UL>
+  <LI>Need multiple jobs to get a good degree of scalability</LI>
+  <LI>Need to specify a finite polling interval for the job (i.e. it can =
+only=20
+  run every N seconds)</LI>
+  <LI>Jobs still run even with no activity in the application</LI>
+  <LI>Can only have a maximum of 10 jobs at any time on the same machine =
+at 8i.=20
+  This goes up to 1000 at 9i, though.</LI></UL>So, while the DBMS_JOB =
+approach is=20
+easy, it's not really the approach to use (in my opinion). <A =
+name=3Ddaemon>
+<H3>"Daemon"-type process</H3>One common practice (and until 9i, in my =
+opinion,=20
+the best option), is to simply create N PL/SQL processes which are =
+constantly=20
+running and which follow the pseudo-code : <PRE>LOOP
+  Attempt dequeue with wait FOREVER which blocks until message appears;
+  process_message;
+END LOOP;
+</PRE>The advantages are :=20
+<UL>
+  <LI>Easy to setup</LI>
+  <LI>More "concurrent" than the DBMS_JOB approach, since the daemon is=20
+  constantly running.</LI></UL>The disadvantages are :=20
+<UL>
+  <LI>The number of concurrent processes is an important factor in the=20
+  scalability of the application</LI>
+  <LI>Processes are running (polling) even when no activity is taking =
+place</LI>
+  <LI>Scalability is dependent on the efficiency of the LOOP</LI>
+  <LI>You may need additional logic to ensure that, if any of the =
+processes=20
+  "die", another one is created to take it's place.</LI></UL>In my =
+opinion, this=20
+is the only real option at 8i and below. <A name=3Dnotify>
+<H3>9i PL/SQL Notification (Callback)</H3>9i added a brilliant new =
+feature which=20
+enables a much better mechanism for queueing than previous versions. =
+<BR><BR>The=20
+problem with previous pre-9i mechanisms, i.e. DBMS_JOB / daemon, is that =
+you=20
+would never develop a GUI application using the same concepts. Imagine =
+it. I=20
+have a form with a button on it. I need to run some code when the button =
+is=20
+pressed. Using the tenets of the pre-9i methods, I would need a timer / =
+routine=20
+which is constantly executing, checking for the state of the button to =
+move from=20
+"unpressed" to "pressed", and then execute the relevant code. This is =
+how it, of=20
+course, would have to be done in a conventional "procedural" language, =
+such as=20
+C, polling for an event to occur. <BR><BR>Callback routines are the =
+equivalent=20
+(in a sense) of event-driven programming. In PL/SQL, AQ can be used to=20
+<B>automatically</B> call a procedure upon successful enqueue. This, in =
+my=20
+opinion, is by far the best mechanism for utilising AQ, since it removes =
+the=20
+need for any daemon or job-based mechanisms for dequeueing, thereby=20
+SIGNIFICANTLY simplifying the work done in both development and by =
+Oracle in=20
+production. <BR><BR>Here's an example of how to use DBMS_AQ with =
+callback :=20
+<BR><BR>Note, the queue table HAS to be created using multiple =
+consumers, i.e.=20
+<BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; BEGIN
+  2    dbms_aqadm.create_queue_table(queue_table =3D&gt; 'queue_table',
+  3                                   queue_payload_type =3D&gt; =
+'message_type',
+  4                                   multiple_consumers=3D&gt;TRUE);
+  5   END;
+  6  /
+</PRE></TD></TR></TBODY></TABLE><BR><BR>
+<HR>
+<B><U>*DEV NOTE*</U></B> <BR><B>Attempting this with a user who has a =
+large=20
+amount of roles (either direct or indirect) assigned (say a DBA user =
+etc) may=20
+result in the following error :</B> <PRE><B>
+SQL&gt; BEGIN
+  2    dbms_aqadm.create_queue_table(queue_table =3D&gt; 'queue_table',
+  3                                  queue_payload_type =3D&gt; =
+'message_type',
+  4                                  multiple_consumers=3D&gt;TRUE);
+  5  END;
+  6  /
+BEGIN
+*
+ERROR at line 1:
+ORA-24166: evaluation context ORAUSER.AQ$_QUEUE_TABLE_V has errors
+ORA-01925: maximum of 30 enabled roles exceeded
+ORA-06512: at "SYS.DBMS_AQADM_SYS", line 2224
+ORA-06512: at "SYS.DBMS_AQADM", line 58
+ORA-06512: at line 2</B>
+</PRE><B>In this case, you need to up the MAX_ENABLED_ROLES =
+initialisation=20
+parameter, or reduce the number of roles that are assigned to the =
+user.</B>=20
+<HR>
+Firstly, create a "dequeue" procedure which will get called =
+automatically. Note,=20
+the parameters names / types are important and have to be like this. =
+<BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>CREATE OR =
+REPLACE PROCEDURE p_dequeue ( context raw,
+                                        reginfo sys.aq$_reg_info,
+                                        descr sys.aq$_descriptor,
+                                        payload raw,
+                                        payloadl number)
+as
+ dequeue_options    dbms_aq.dequeue_options_t;
+ message_properties dbms_aq.message_properties_t;
+ message_handle     RAW(16);
+ message            message_type;
+BEGIN
+   dequeue_options.msgid         :=3D descr.msg_id;
+   dequeue_options.consumer_name :=3D descr.consumer_name;
+
+   dbms_aq.dequeue(queue_name =3D&gt; descr.queue_name,
+                   dequeue_options =3D&gt; dequeue_options,
+                   message_properties =3D&gt; message_properties,
+                   payload =3D&gt; message,
+                   msgid =3D&gt; message_handle);
+
+   /* Add the INSERT into an output table. This is so we can see it =
+working.
+      In reality, the logic to execute the process would be here */
+
+   INSERT INTO output_table VALUES ( message.message_body );
+
+   COMMIT;
+END;
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Now, add the receiving =
+subscriber to the=20
+queue. Note, that these can be left "as is", they're more of a formality =
+than=20
+anything <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; BEGIN
+  2    dbms_aqadm.add_subscriber
+  3      ( queue_name =3D&gt; 'EXAMPLE_QUEUE',
+  4        subscriber =3D&gt; sys.aq$_agent('RECIPIENT', NULL, NULL) );
+  5  END;
+  6  /
+
+PL/SQL procedure successfully completed.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Now, register the subscriber / =
+procedure=20
+combination <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; BEGIN
+  2    dbms_aq.register
+  3      ( sys.aq$_reg_info_list (
+  4          sys.aq$_reg_info ( 'EXAMPLE_QUEUE:RECIPIENT',
+  5                             dbms_aq.namespace_aq,
+  6                             <B>'plsql://p_dequeue'</B>,
+  7                             HEXTORAW('FF')
+  8                           )
+  9        ),
+ 10        1
+ 11      );
+ 12* END;
+SQL&gt; /
+
+PL/SQL procedure successfully completed.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>Now, we can enqueue and see the =
+output=20
+(via output_table) immediately, proving that the p_dequeue process has =
+been=20
+executed without the need for a seperate polling process. <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; EXEC =
+p_enqueue('THIS IS A TEST');
+
+PL/SQL procedure successfully completed.
+
+SQL&gt; SELECT * FROM output_table;
+
+MSG
+-------------------------------------------------------------------------=
+---------------------------
+THIS IS A TEST
+</PRE></TD></TR></TBODY></TABLE><BR><BR><B><U>*DEV NOTE*</U></B> <BR>You =
+can=20
+register notification off a queue for multiple processes (which can be =
+plsql://,=20
+mailto://, web services etc) : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>DECLARE
+  reginfolist  sys.aq$_reg_info_list =3D sys.aq$_reg_info_list();
+BEGIN
+  reginfolist.EXTEND(3);
+  reginfolist(1) :=3D sys.aq$_reg_info ( 'EXAMPLE_QUEUE:RECIPIENT', =
+dbms_aq.namespace_aq,<B>'plsql://p_dequeue'</B>, HEXTORAW('FF') );
+  reginfolist(2) :=3D sys.aq$_reg_info ( 'EXAMPLE_QUEUE:RECIPIENT', =
+dbms_aq.namespace_aq,<B>'mailto://x@y.z'</B>, HEXTORAW('FF') );
+  reginfolist(3) :=3D sys.aq$_reg_info ( 'EXAMPLE_QUEUE:RECIPIENT', =
+dbms_aq.namespace_aq,<B>'http://webserver/servlet'</B>, HEXTORAW('FF') =
+);
+
+-- do the registration
+  sys.dbms_aq.register(reginfolist, 3);
+END;
+</PRE></TD></TR></TBODY></TABLE><BR><BR>
+<HR>
+<A name=3Ddrop_aq>
+<H3>Removing queues</H3>It's quite simple really, simply, stop the =
+queue, drop=20
+the queue then drop the queue table, i.e. <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; begin
+  2    dbms_aqadm.stop_queue('EXAMPLE_QUEUE');
+  3    dbms_aqadm.drop_queue('EXAMPLE_QUEUE');
+  4    dbms_aqadm.drop_queue_table('queue_table');
+  5  end;
+  6  /
+
+PL/SQL procedure successfully completed.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>
+<HR>
+<A name=3Dmonitor_aq>
+<H3>Monitoring Queues</H3>You can utilise the DBA_QUEUES / =
+DBA_QUEUE_TABLES and=20
+V$AQ views to monitor the state of your queues (and all other queues in =
+the=20
+oracle database). The following query will show you basic information =
+about the=20
+queues (in this case, EXAMPLE_QUEUE that we created earlier) : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; SELECT
+  2    a.owner,
+  3    a.name,
+  4    a.queue_type,
+  5    a.queue_table,
+  6    a.retention,
+  7    a.enqueue_enabled,
+  8    a.dequeue_enabled,
+  9     b.waiting,
+ 10     b.ready,
+ 11     b.expired,
+ 12     b.total_wait,
+ 13     b.average_wait
+ 14   FROM
+ 15     dba_queues a,
+ 16     v$aq b
+ 17   WHERE a.qid =3D b.qid
+ 18   AND  a.name =3D 'EXAMPLE_QUEUE'
+ 19  /
+
+OWNER                          NAME                           QUEUE_TYPE =
+          QUEUE_TABLE
+------------------------------ ------------------------------ =
+-------------------- -----------------
+RETENTION                                ENQUEUE DEQUEUE    WAITING      =
+READY    EXPIRED TOTAL_WAIT AVERAGE_WAIT
+---------------------------------------- ------- ------- ---------- =
+---------- ---------- ----------
+ORAUSER                        EXAMPLE_QUEUE                  =
+NORMAL_QUEUE         QUEUE_TABLE
+0                                          YES     YES            0      =
+    0          0          0            0
+</PRE></TD></TR></TBODY></TABLE><BR><BR>In order to understand what is =
+being=20
+seen here, you have to understand about AQ message <I>states</I>. =
+Basically,=20
+each queue table you create has a <I>STATE</I> column which shows what =
+the state=20
+of the message is. <BR><BR>The full list of message states is explained =
+in=20
+Metalink Note, <A class=3Dofftab4=20
+href=3D"http://metalink.oracle.com/metalink/plsql/ml2_documents.showDocum=
+ent?p_database_id=3DNOT&amp;p_id=3D102330.1">102330.1</A>.=20
+<BR><BR>However, as an overview, the state column can have a value of =
+(0,1,2,3),=20
+the list is : <BR><BR>
+<TABLE border=3D1>
+  <TBODY>
+  <TR>
+    <TD>State</TD>
+    <TD>Value</TD>
+    <TD>Explanation</TD></TR>
+  <TR>
+    <TD>0</TD>
+    <TD>READY</TD>
+    <TD>The message is ready to be processed, i.e. either the message =
+delay=20
+      time has passed, or there was none specified</TD></TR>
+  <TR>
+    <TD>1</TD>
+    <TD>WAITING</TD>
+    <TD>The delay specified by message_properties_t.delay has not been=20
+    reached</TD></TR>
+  <TR>
+    <TD>2</TD>
+    <TD>RETAINED or PROCESSED</TD>
+    <TD>The message has been successfully dequeued, and will remain in =
+the=20
+      queue for as long as was specified as the retention time when =
+creating the=20
+      queue</TD></TR>
+  <TR>
+    <TD>3</TD>
+    <TD>EXPIRED</TD>
+    <TD>The message has not been successfully dequeued, because either=20
+      <OL>
+        <LI>the time specified by message_properties_t.expiration while=20
+        executing dbms_aq.enqueue has elapsed, or</LI>
+        <LI>the maximum number of dequeue attempts (max_retries) =
+specified for=20
+        the queue while executing dbms_aqadm.create_queue has been=20
+      =
+reached</LI></OL></TD></TR></TBODY></TABLE><BR><B><U>*IMPORTANT*</U></B> =
+
+<BR>Messages with a STATE of 2 will not appear in V$AQ.=20
+<HR>
+<A name=3Dqueue_performance>
+<H2>Queue Performance</H2>It's very difficult to precisely quantify the=20
+"performance" of AQ, since every situation will be so different, that =
+one set of=20
+benchmarks will probably have no relevance to another situation. =
+However, given=20
+what we currently know, there are a few general points which we can make =
+which=20
+highlight why AQ is such a good solution :=20
+<UL>
+  <LI><B>Size IS important!</B>. At the end of the day, for obvious =
+reasons,=20
+  performance will degrade as a function of message size. So, try and =
+keep the=20
+  message size as small as possible</LI>
+  <LI><B>Consider multiple queue tables</B>. These CAN reduce contention =
+on the=20
+  same segment. Note, though, the same arguments about same table / =
+different=20
+  table still apply for queue tables as well as "standard" tables (which =
+of=20
+  course they are), i.e. block sizes / easier to cache in the shared =
+pool etc.=20
+  </LI>
+  <LI><B>Use Auto-Notification</B>. Simply removing the need for =
+seperate=20
+  polling dequeue processes simplifies the implementation DRAMATICALLY,=20
+  decreases the amount of "stuff" happening, and increases =
+scalability.</LI>
+  <LI><B>Ensure that it is AQ which is causing the performance =
+problem</B>. All=20
+  the problems I've seen on the different systems using AQ have always =
+been a=20
+  problem with inefficient code, such as the polling interval / PL/SQL=20
+  "listeners" etc.</LI>
+  <LI><B>Benchmark for the situation</B>. Rules which work for one =
+system may=20
+  not work for another.</LI></UL>
+<HR>
+<A name=3Dqueue_session>
+<H2>Session Handling within Queues</H2>It's very worthwhile knowing =
+various=20
+things about sessions when dealing with system processes such as =
+DBMS_JOBs and=20
+DBMS_AQs. <BR><BR>The common way to get your sessions "session id" is to =
+use one=20
+of the following context calls : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; SELECT =
+userenv('sessionid'), sys_context('USERENV', 'SESSIONID')
+  2  FROM dual;
+
+USERENV('SESSIONID') SYS_CONTEXT('USERENV','SESSIONID')
+-------------------- ---------------------------------------------------
+                3006 3006
+</PRE></TD></TR></TBODY></TABLE><BR><BR><B>Note, the differing return =
+datatypes=20
+of the functions for sessionid, USERENV returns a numeric, SYS_CONTEXT =
+returns a=20
+string.</B> <BR>SYS_CONTEXT is Oracle's preferred method going forward, =
+however,=20
+just remember to TO_NUMBER it when you use it, when appropriate. =
+<BR><BR>The=20
+sessionid corresponds to the entry in the AUDSID column in V$SESSION for =
+your=20
+session, i.e. <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>SQL&gt; SELECT =
+sid, serial#, audsid, username, program
+  2  FROM   v$session
+  3  /
+
+     SID    SERIAL#     AUDSID USERNAME   PROGRAM
+-------- ---------- ---------- ---------- -------------------
+       1          1          0            ORACLE.EXE
+       2          1          0            ORACLE.EXE
+       3          1          0            ORACLE.EXE
+       4          1          0            ORACLE.EXE
+       5          1          0            ORACLE.EXE
+       6          1          0            ORACLE.EXE
+       7          1          0            ORACLE.EXE
+       8          1          0            ORACLE.EXE
+      11         54          0            ORACLE.EXE
+      13        875       <B>3006</B> ORAUSER    sqlplusw.exe
+
+10 rows selected.
+</PRE></TD></TR></TBODY></TABLE><BR><BR>However, as you can see from the =
+above=20
+query, all system-type processes run with an AUDSID of 0, and therefore, =
+this=20
+isn't much use as a "unique session identifier" which is useful when =
+trying to=20
+communicate between distinct processes. <BR><BR>The other thing to bear =
+in mind,=20
+is that DBMS_JOBs, DBMS_AQs etc, run as SYS, i.e. these packages are =
+definer's=20
+rights packages in the SYS schema. We can show all this, by modifying =
+our=20
+P_DEQUEUE procedure that we've got registered against the queue to add =
+to the=20
+INSERT into an output table of the user / session id / sid, to see =
+what's=20
+actually going on : <BR><BR>
+<TABLE border=3D1 width=3D500 align=3Dcenter>
+  <TBODY>
+  <TR>
+    <TD bgColor=3D#ffff00 vAlign=3Dtop align=3Dleft><PRE>CREATE OR =
+REPLACE PROCEDURE plsqlCallback ( context raw,
+                                            reginfo sys.aq$_reg_info,
+                                            descr sys.aq$_descriptor,
+                                            payload raw,
+                                            payloadl number)
+as
+ dequeue_options    dbms_aq.dequeue_options_t;
+ message_properties dbms_aq.message_properties_t;
+ message_handle     RAW(16);
+ message            message_type;
+BEGIN
+   dequeue_options.msgid         :=3D descr.msg_id;
+   dequeue_options.consumer_name :=3D descr.consumer_name;
+
+   DBMS_AQ.DEQUEUE(queue_name =3D&gt; descr.queue_name,
+                   dequeue_options =3D&gt; dequeue_options,
+                   message_properties =3D&gt; message_properties,
+                   payload =3D&gt; message,
+                   msgid =3D&gt; message_handle);
+
+
+
+   INSERT INTO output_table ( msg )
+   SELECT
+     user || ' : ' ||
+     SYS_CONTEXT('userenv', 'sessionid') || ' : ' ||
+     sid
+   FROM v$mystat
+   WHERE rownum =3D 1;
+
+   COMMIT;
+END;
+/
+
+SQL&gt; SELECT *
+  2    FROM output_table;
+
+MSG
+--------------------------------
+SYS : 0 : 18
+</PRE></TD></TR></TBODY></TABLE><BR><BR>So, what options do we have? =
+Well, the=20
+obvious one, I suppose, is to include the clients session id in the =
+enqueue'd=20
+message. The object type will have the session_id in it. This can then =
+be used=20
+by the dequeue-ing process to identify any session-specific information =
+which,=20
+for example, is stored in a "parameters" table etc. This does have the=20
+disadvantage of increasing message size, but typically, AUDSID (or SID, =
+which=20
+maybe is better), wouldn't take up a huge amount of space in the object =
+TYPE=20
+anyway.=20
+<HR>
+</A></BODY></HTML>
+
+------=_NextPart_000_0000_01CC55E8.A2839DD0
+Content-Type: text/css;
+	charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: http://www.oratechinfo.co.uk/stylesheet/oratech.css
+
+.offtab4 {
+	BACKGROUND-COLOR: #fff; FONT-FAMILY: arial, helvetica, sans-serif; =
+COLOR: #336699; FONT-SIZE: 9pt; TEXT-DECORATION: none
+}
+.offtab4:hover {
+	BACKGROUND-COLOR: #fff; FONT-FAMILY: arial, helvetica, sans-serif; =
+COLOR: red; FONT-SIZE: 9pt; TEXT-DECORATION: underline
+}
+.offtab7 {
+	TEXT-ALIGN: left; LINE-HEIGHT: 18px; BACKGROUND-COLOR: #fff; =
+FONT-FAMILY: verdana, arial, helvetica, sans-serif; COLOR: #006400; =
+FONT-SIZE: 11px
+}
+.offtab8 {
+	TEXT-ALIGN: center; LINE-HEIGHT: 18px; BACKGROUND-COLOR: #fff; =
+FONT-FAMILY: verdana, arial, helvetica, sans-serif; COLOR: #8b0000; =
+FONT-SIZE: 11px
+}
+.offtab9 {
+	TEXT-ALIGN: left; LINE-HEIGHT: 18px; BACKGROUND-COLOR: #fff; =
+FONT-FAMILY: verdana, arial, helvetica, sans-serif; COLOR: #8b0000; =
+FONT-SIZE: 11px
+}
+.sectiontitle {
+	TEXT-ALIGN: center; PADDING-BOTTOM: 1px; BACKGROUND-COLOR: #008000; =
+COLOR: #ffffff; FONT-WEIGHT: bold; PADDING-TOP: 1px
+}
+
+------=_NextPart_000_0000_01CC55E8.A2839DD0--

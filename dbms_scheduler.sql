@@ -1,0 +1,52 @@
+select * from dba_scheduler_jobs
+
+begin
+  dbms_scheduler.create_job(
+      job_name => 'DEMO_JOB_SCHEDULE'
+     ,job_type => 'PLSQL_BLOCK'
+     ,job_action => 'begin calculate_progress; end;'
+     --,start_date => '26/01/2010 14:35 PM'
+     --,repeat_interval => 'freq=hourly;byminute=1,30'
+     ,repeat_interval => 'freq=minutely'
+     ,enabled => TRUE
+     ,comments => 'See description of calculate_progress');
+end;
+
+begin dbms_scheduler.drop_job('DEMO_JOB_SCHEDULE'); end;
+
+
+
+DBMS_SCHEDULER.SET_ATTRIBUTE (
+name=>’Myschema.Daily_Emp_Report’,
+attribute=>’job_action’,
+value=>’Myschema.p_monthly_emp_teport’);
+
+DBMS_SCHEDULER.STOP_JOB (
+job_name IN VARCHAR2
+force IN BOOLEAN DEFAULT FALSE
+commit_semantics IN VARCHAR2 DEFAULT ‘STOP_ON_FIRST_ERROR’);
+
+DBA_SCHEDULER_PROGRAMS
+DBA_SCHEDULER_JOBS
+DBA_SCHEDULER_JOB_ROLES
+DBA_SCHEDULER_JOB_CLASSES
+DBA_SCHEDULER_WINDOWS
+DBA_SCHEDULER_PROGRAM_ARGS
+DBA_SCHEDULER_JOB_ARGS
+DBA_SCHEDULER_JOB_RUN_DETAILS
+DBA_SCHEDULER_JOB_LOG
+DBA_SCHEDULER_WINDOW_LOG
+DBA_SCHEDULER_WINDOW_DETAILS
+DBA_SCHEDULER_WINDOW_GROUPS
+DBA_SCHEDULER_WINGROUP_MEMBERS
+DBA_SCHEDULER_WINGROUP_MEMBERS
+DBA_SCHEDULER_SCHEDULES
+DBA_SCHEDULER_RUNNING_JOBS
+DBA_SCHEDULER_REMOTE_DATABASES
+DBA_SCHEDULER_REMOTE_JOBSTATE
+DBA_SCHEDULER_GLOBAL_ATTRIBUTE
+DBA_SCHEDULER_CHAINS
+DBA_SCHEDULER_CHAIN_RULES
+DBA_SCHEDULER_CHAIN_STEPS
+DBA_SCHEDULER_RUNNING_CHAINS
+DBA_SCHEDULER_CREDENTIALS

@@ -1,0 +1,14 @@
+--rebuild the index
+begin
+execute immediate 'drop index DM_EX_INDX3'; exception when others then null; 
+execute immediate 'create index DM_EX_INDX3 on dm_event(Target_Partner) indextype is ctxsys.context'; 
+exception when others then null; end;
+
+--function contains users the full context index   
+select AccountId, substr(min(e.StartDateTime),1,10) 
+from dm_event e         
+where e.isDeleted = 'false'
+--
+and e.Status = 'Submitted'
+and contains(e.Target_Partner,'Animas Call',1) > 0
+

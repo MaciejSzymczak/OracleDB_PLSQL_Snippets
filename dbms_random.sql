@@ -1,0 +1,1 @@
+select round(dbms_random.value(1,1000)) from dual
