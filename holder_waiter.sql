@@ -1,10 +1,31 @@
---!locks
+-- locks monitor
+with lock_query as (
+    select /*+ rule*/ s.sid, s.username, s.sid || ',' || s.serial# sid_serial, s.module
+          ,p.spid, s.status, s.osuser, s.machine, s.program, s.sql_id, state, event
+          ,blocking_session sid_b
+     from v$session s
+         ,v$process p
+    where s.paddr = p.addr
+      and blocking_session is not null
+    union all
+    select /*+ rule*/ s.sid, s.username, s.sid || ',' || s.serial# sid_serial, s.module
+          ,p.spid, s.status, s.osuser, s.machine, s.program, s.sql_id, state, event
+          ,blocking_session sid_b
+     from v$session s
+         ,v$process p
+    where s.paddr = p.addr
+      and s.sid in (select distinct blocking_session from gv$session)
+  )
+select /*+ rule */ lpad('  ',2*(level-1)) || sid lock_tree, /*sid,*/ username
+      ,sid_serial, spid, status, osuser, machine
+      ,program, module, sql_id, state, event
+from lock_query
+connect by  prior sid = sid_b
+  start with sid_b is null; 
+  
+SELECT * FROM TABLE(dbms_xplan.display_awr('chcyn8wyuutyk'));
 
-select * from dba_dml_locks
-
-select * from dba_ddl_locks  x   where name = 'SWD2_UTIL'
-
--- tylko locki
+-- locks monitor
 select 
    substr(decode (l.request, 0, 'Holder: ','Waiter: ')||''''||l.sid||','||s.serial#||'''',1,20) sess
    , (SELECT 'ALTER SYSTEM KILL SESSION '''|| SID ||',' ||SERIAL#||'''' FROM V$SESSION WHERE SID = L.SID) KILL_STATEMENT
@@ -28,6 +49,11 @@ where l.sid = s.sid (+)
      where request>0                                                                                                     
    )                                                                                                                     
 order by l.id1, l.inst_id,  l.request                                                                               
+
+--!locks
+
+select * from dba_dml_locks
+select * from dba_ddl_locks  x   where name = 'SWD2_UTIL'
 
 -- wszystkie sesje
 select (SELECT 'ALTER SYSTEM KILL SESSION '''|| s.SID ||',' ||s.SERIAL#||'''' FROM V$SESSION WHERE SID = s.SID) KILL_STATEMENT, 

@@ -1,0 +1,31 @@
+explain plan for 
+ update dm_contact c
+     set update_me = 'true'     
+       , lastmodifieddate_accc = sysdate
+       , New_Actual_Call_Coverage_Cycle = null
+    where c.isDeleted ='false'
+	  --
+      and c.countryiso2code = :countryiso2code
+	  --
+      and (
+      --'1'='1' or --enforce_calculate_all
+      :b='true'
+      or
+      c.id in 
+        (select r.RelationId 
+         from dm_EventWhoRelation r
+          , dm_Event e
+          , dm_contact c
+        where e.id  = r.EventId
+          and r.Type='Contact'
+          and c.id = r.RelationId
+          and c.isDeleted ='false'
+          and c.countryiso2code = :countryiso2code
+          and e.lastmodifieddate > :ptreshholdDate
+          and e.StartDateTime between :date_from and :date_to
+          and e.type in ('Contact Call','Group Call','Account Call')
+          --take both deleted and not deleted
+        )
+      )
+
+SELECT * FROM table(dbms_xplan.display);

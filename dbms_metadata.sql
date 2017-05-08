@@ -1,1 +1,0 @@
-select dbms_metadata.get_ddl('PACKAGE','XXEX_GAP3_PKG', 'APPS') FROM dual
