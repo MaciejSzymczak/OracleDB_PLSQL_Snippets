@@ -6,8 +6,14 @@ create or replace package dataDensity AS
     dataDensity.calculate('ALL_EXTERNAL_CONTACTS','createdDate > ''2019-02-04T14:00:00.000Z''');
     end;
     
-    select unique_values.all_distinct_values, 
-           first_values.*  
+select unique_values.all_distinct_values, 
+           first_values.*,
+           case when pct=100 then 'NOT USED: DELETE'
+            when pct>99 then 'VERY RARELY USED: DELETE'
+            when pct>90 then 'RARELY USED: CONSIDER DELETETION'
+           end Recommendation  
+           , mod( (DENSE_RANK () over (partition by null order by unique_values.field_name)), 2) even_row
+           , (DENSE_RANK () over (partition by null order by unique_values.field_name)) field_no
     from    
         (
             select * from
