@@ -1,0 +1,43 @@
+For 18c XE the connection string is 127.0.0.1:1521/XEPDB1 (do not use 127.0.0.1:1521/XE)
+==========================================================================================
+ 
+Why:
+Oracle 12 onward is multi tenancy DB, which means several isolated, independent pdb’s (pdb for pluggable database) can be installed on single engine (cdb).
+Pdb is just separate database with its own public synonyms, schemat etc. It inherits cdb users. 
+The change was introduced to give the possibility of better maintenance of several databases.
+Pdb can be easily created, clonned etc.
+Once 18c XE is installed it contains one pdb, the XEPDB1 one, and one cdb XE.
+Each pdb has its individual tnsname.
+The trick to connecting to a pluggable database (pdb) is to know the TNS service name.
+While login to  127.0.0.1:1521/XEPDB1 you login do pdb. 
+While login to 127.0.0.1:1521/XE you login to cdb.
+Cbd as a limitations like the user name must start from c## and cannot be used as such.
+Do not use not supported tricks like (it works but this not supported)
+prompt Oracle 18c http://www.dba-oracle.com/t_ora_65096_create_user_12c_without_c_prefix.htm
+alter session set "_ORACLE_SCRIPT"=true;
+ 
+Other details:
+Checking current pdb name
+SELECT SYS_CONTEXT (‘USERENV’, ‘CON_NAME’) FROM DUAL;
+ 
+Changing active pdb:
+alter session set container = nameofyourpluggabledatabase
+ 
+List of pdb:
+SELECT NAME, CON_ID, CON_UID FROM V$PDBS ORDER BY CON_ID;
+ 
+List of cdb (yeah, there can be many, I didnt mention it):
+SELECT NAME, CON_ID, CON_UID FROM V$CONTAINERS ORDER BY CON_ID;
+ 
+more:
+http://www.dba-oracle.com/t_pluggable_database.htm
+ 
+On the occasion of an error like: The wizzard was interrupted before Oracle 18c XE could be completely installed:
+==================================================================================================================
+ 
+Check logs (if any) here  C:\app\Maciek\product
+Check logs is any here C:\app\Maciek\cfgtoollogs
+Check HD available space, restart
+Delete any suspicious environment variable like %oracle%, TNS
+Delete all oracle folders from HD
+Run setup.exe rather than Oracle Database 18c Express Edition.msi
