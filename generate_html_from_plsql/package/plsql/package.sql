@@ -100,7 +100,7 @@ create or replace package body pivot is
 <head>
   <meta charset="utf-8">
   <title></title>
-  <link href="StyleSheet.css" rel="stylesheet">
+  <link href="pivot.css" rel="stylesheet">
 </head>
   <body>
   <table>
