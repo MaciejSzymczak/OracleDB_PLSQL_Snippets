@@ -89,7 +89,7 @@ create or replace package body pivot is
             WHERE lecturers.id = classes.id
              and resources.id = classes.id
              and CLASSES.HOUR = GRIDS.NO
-             and day = pDay
+             and day = trunc(pDay)
              ;     
          
          
