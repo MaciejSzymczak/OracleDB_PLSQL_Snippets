@@ -1,0 +1,12 @@
+table, td, th {
+  border: 1px solid black;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+col:first-child {background: #ABEBC6}
+tr:nth-child(even) {background: white}
+tr:nth-child(odd) {background: #ABEBC6}
