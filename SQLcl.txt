@@ -1,0 +1,61 @@
+SQLcl is replacement for SQLPlus. However the value added by SQLcl is minimal.
+The tool has far less capabilities than SQLDeveloper.
+
+Type help: New commands are underlined
+The biggest improvement is build-in export to html, xml, json but shamefully there is no export to excel.
+You can also import records from csv into database (or just use sqlldr / sqldeveloper or external tables as before)
+
+Code snippets: 
+
+=== login ====
+export JAVA_HOME=${HOME}/java/latest
+alias sql="${HOME}/sqlcl/bin/sql"
+sql
+CONN scott/tiger@//myhost.example.com:1521/myservice
+ 
+=========== SQLcl : Format Query Results with the SET SQLFORMAT Command 
+ 
+SELECT /*csv*/ * FROM emp;
+SELECT /*html*/ * FROM emp;
+SELECT /*xml*/ * FROM emp;
+SELECT /*json*/ * FROM emp;
+SELECT /*json-formatted*/ * FROM emp;
+SELECT /*ansiconsole*/ * FROM emp;
+SELECT /*insert*/ * FROM emp;
+SELECT /*loader*/ * FROM emp;
+SELECT /*fixed*/ * FROM emp;
+SELECT /*delimited*/ * FROM emp;
+SELECT /*text*/ * FROM emp;
+ 
+OR 
+SET SQLFORMAT CSV
+SET SQLFORMAT XML
+..
+
+====data download / upload ===
+SQL> SET sqlformat csv
+SQL> cd /Users/thatjeffsmith
+SQL> spool objects.csv
+SQL> SELECT * FROM all_objects fetch FIRST 100 ROWS ONLY;
+SQL> spool off
+SQL> CREATE TABLE demo_load AS SELECT * FROM all_objects WHERE 1=2;
+SQL> LOAD demo_load objects.csv
+SQL> commit;
+
+another example:
+ALTER SESSION SET nls_timestamp_format=’DD-MON-YYYY HH24.MI.SS.FF6′;
+set loadformat delimiter ~~~
+load table x /tmp/x.txt
+
+Load data into table X
+
+csv
+column_names on
+delimiter ~~~
+enclosures “”
+encoding UTF8
+row_limit off
+row_terminator default
+skip_rows 0
+skip_after_names
+source: https://www.thatjeffsmith.com/archive/2019/09/sqlcl-and-the-load-csv-command/
