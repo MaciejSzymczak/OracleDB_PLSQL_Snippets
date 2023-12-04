@@ -12,3 +12,4 @@ select to_char(dbms_metadata.get_ddl('INDEX',index_name,table_owner)) from all_i
 
 ---
 select dbms_metadata.get_ddl('PACKAGE','XXEX_GAP3_PKG', 'APPS') FROM dual
+select DBMS_METADATA.GET_DDL('REF_CONSTRAINT', 'TT_PLA_FK2') from dual
