@@ -12,3 +12,8 @@ where e.isDeleted = 'false'
 and e.Status = 'Submitted'
 and contains(e.Target_Partner,'Animas Call',1) > 0
 
+FUZZY SEARCH
+===============================================
+--works fine. the fuzzy parameter has to be one word (no spaces are allowed, tested in Oracle 11g)
+create index lec_I1 on lecturers(desc1) indextype is ctxsys.context;
+select * from lecturers where CONTAINS (desc1, 'fuzzy(kształcenia)')>0
