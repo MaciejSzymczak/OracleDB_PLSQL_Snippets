@@ -73,6 +73,29 @@ END;
 bulk collection
 --------------------------------
 
+EXAMPLE 1
+While non-bulk cursor are more elegant, bulk cursors are quicker.
+Use bulk one when your cursor returns large number of records
+
+-- Less efficient implicit cursor
+FOR rec IN (SELECT col FROM my_table) LOOP
+  -- process each row
+END LOOP;
+
+-- More efficient BULK COLLECT
+DECLARE
+  TYPE col_array IS TABLE OF my_table.col%TYPE;
+  arr col_array;
+BEGIN
+  SELECT col BULK COLLECT INTO arr FROM my_table;
+  FOR i IN 1 .. arr.COUNT LOOP
+    -- process each row in bulk
+  END LOOP;
+END;
+
+
+EXAMPLE 2
+
 type EXTRACT_LINE_ID_TBL is table of AR_TAX_EXTRACT_SUB_ITF.EXTRACT_LINE_ID%type index by binary_integer;
 G_EXTRACT_LINE_ID_TBL                 EXTRACT_LINE_ID_TBL;
 select X bulk collect into  G_EXTRACT_LINE_ID_TBL from dual;
