@@ -1,3 +1,36 @@
+SELECT
+    --s1.osuser           AS blocking_os_user,
+    s1.username         AS blocking_user,
+    --s1.sid              AS blocking_sid,
+    --s1.serial#          AS blocking_serial,
+    (SELECT 'ALTER SYSTEM KILL SESSION '''|| s1.SID ||',' ||s1.SERIAL#||'''' FROM SYS.V_$SESSION WHERE SID = s1.SID) KILL_STATEMENT,
+    --s2.osuser           AS blocked_os_user,
+    s2.username         AS blocked_user,
+    --s2.sid              AS blocked_sid,
+    --s2.serial#          AS blocked_serial,
+    o.object_name,
+    --do.object_type,
+    --lo.locked_mode,
+    --s2.row_wait_obj#    AS wait_obj_id,
+    --s2.row_wait_file#   AS wait_file#,
+    --s2.row_wait_block#  AS wait_block#,
+    --s2.row_wait_row#    AS wait_row#,
+    (select 'SELECT rowid, '||o.object_name||'.* FROM '||o.object_name||' WHERE dbms_rowid.rowid_block_number(rowid) = '||s2.row_wait_block#||' AND dbms_rowid.rowid_row_number(rowid) = '||s2.row_wait_row# from dual) table_details
+FROM
+    v$locked_object lo
+    JOIN dba_objects do ON lo.object_id = do.object_id
+    JOIN v$session s1 ON lo.session_id = s1.sid
+    JOIN v$session s2 ON s1.sid IN (
+        SELECT l1.sid
+        FROM v$lock l1, v$lock l2
+        WHERE l1.block = 1 AND l2.request > 0 AND l1.id1 = l2.id1 AND l1.id2 = l2.id2
+    )
+    LEFT JOIN dba_objects o ON s2.row_wait_obj# = o.object_id
+WHERE
+    s1.blocking_session IS NULL
+    AND s1.sid != s2.sid
+    and o.object_name in (select object_name from all_objects where object_type='TABLE' and owner='PLANNER');
+
 -- locks monitor
 with lock_query as (
     select /*+ rule*/ s.sid, s.username, s.sid || ',' || s.serial# sid_serial, s.module
@@ -52,8 +85,8 @@ order by l.id1, l.inst_id,  l.request
 
 --!locks
 
-select * from dba_dml_locks
 select * from dba_ddl_locks  x   where name = 'SWD2_UTIL'
+select * from dba_dml_locks  x   where name = 'SWD2_UTIL'
 
 -- wszystkie sesje
 select (SELECT 'ALTER SYSTEM KILL SESSION '''|| s.SID ||',' ||s.SERIAL#||'''' FROM V$SESSION WHERE SID = s.SID) KILL_STATEMENT, 
@@ -89,24 +122,6 @@ FROM
    sys.v_$session b
 where  . . . 
  
-
-You can also query v$access and v$locked_object to see specific locks:  
-
-select * from v$access where OBJECT = 'CWF_T_REAL_ESTATES'
-
-select s.sid, s.serial#, p.spid 
-from 
-   v$session s, 
-   v$process p 
-where 
-   s.paddr = p.addr 
-and 
-   s.sid in (select SESSION_ID from v$locked_object)
- 
-
-
-
-
 
 -- FND_USER - który user które tabele 
 SELECT 
@@ -290,16 +305,6 @@ SELECT
 FROM V$LOCK L
 ORDER BY SID
 
--- poprzednie nie zadzia³a³o - spróbuj tego
-select a.sid, b.serial#, a.inst_id, substr (a.event, 1, 30) event_name, substr (b.username, 1, 15), a.p1, a.p2,       
-round(a.seconds_in_wait/60,0) minutes, state                                                                          
-from gv$session_wait a, gv$session b                                                                                  
-where a.sid=b.sid and a.inst_id=b.inst_id and a.event not like '%SQL%' and a.event not like '%rdbms%'             
-and a.event not like '%time%' and a.event not like '%message%' and event not like '%pipe%'                      
-and seconds_in_wait > 600 -- 10 minut                                                                                 
-order by seconds_in_wait desc 
-
-
 Source: https://github.com/gwenshap
 =======================================================================
 
@@ -310,10 +315,10 @@ select * from dba_blockers
 select * from dba_waiters
 
 -- Find what the blocking session is doing
-select sid,blocking_session,username,sql_id,event,state,machine,osuser,program,last_call_et from v$session where sid=746 ;
+select sid,blocking_session,username,sql_id,event,state,machine,osuser,program,last_call_et from v$session where sid=143 ;
 
--- Find the blocked objects
-select owner,object_name,object_type from dba_objects where object_id in (select object_id from v$locked_object where session_id=271 and locked_mode =3);
+-- Find the blocked objects: not working
+select owner,object_name,object_type from dba_objects where object_id in (select object_id from v$locked_object where session_id=143 and locked_mode =3);
 
 
 -- Friendly query for who is blocking who
@@ -354,9 +359,6 @@ join dba_objects do on lo.OBJECT_ID = do.OBJECT_ID
 WHERE (id1, id2, gv$lock.type) IN (
   SELECT id1, id2, type FROM gv$lock WHERE request>0)
 ORDER BY id1, request;
-
-
-
 
 -- Who is blocking who, with some decoding
 select	sn.USERNAME,
